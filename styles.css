@@ -1,0 +1,40 @@
+html {
+    margin:    30px auto;
+    max-width: 800px;
+}
+
+body {
+    font-family: Helvetica, Arial, Sans-Serif;
+}
+
+p {
+    margin-top: 20px;
+}
+
+img.plot {
+    display: block;
+    margin: auto;
+}
+
+pre.prettyprint {
+    border: none!important;
+    background: #ebedeb;
+    padding: 10px 15px!important;
+}
+
+.MathJax {
+    font-size: 100%!important;
+}
+
+p.figure-label {
+    text-align: center;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+div.loop {
+    display: block;
+    margin: auto;
+    width: 650px;
+    margin-top: 30px;
+}
