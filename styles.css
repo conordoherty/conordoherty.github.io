@@ -39,7 +39,7 @@ img.main-photo {
     max-width: 350px;
 }
 
-@media (max-width:900px) {
+@media (max-width:500px) {
     img.main-photo {
         max-width: 90%;
     }
