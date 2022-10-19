@@ -36,7 +36,7 @@ div.loop {
 }
 
 img.main-photo {
-    max-width: 350px;
+    max-width: 330px;
 }
 
 @media (max-width:500px) {
