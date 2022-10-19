@@ -44,3 +44,11 @@ img.main-photo {
         max-width: 90%;
     }
 }
+
+a {
+    text-decoration: none;
+}
+
+a:visited {
+    color: blue;
+}
