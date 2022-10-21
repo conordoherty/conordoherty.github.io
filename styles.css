@@ -24,8 +24,10 @@ pre.prettyprint {
 
 p.figure-label {
     text-align: center;
-    font-weight: bold;
     margin-top: 5px;
+    font-size: 90%;
+    max-width: 500px;
+    margin: auto;
 }
 
 div.loop {
@@ -51,4 +53,13 @@ a {
 
 a:visited {
     color: blue;
+}
+
+p.quote {
+    display: block;
+    text-align: center;
+    background: #ebedeb;
+    padding: 10px;
+    width: 500px;
+    margin: 20px auto;
 }
