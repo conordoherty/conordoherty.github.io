@@ -12,6 +12,16 @@
         <h1>The Uses and Limitations of the Discrete Fourier Transform for Analyzing 
             Intra-Annual Environmental Time Series</h1>
 
+        <p><strong>Author:</strong> Conor Doherty <!--br />
+        <strong>Last updated:</strong> 11-2-22 --></p>
+
+        <p><strong>NOTICE:</strong> The content on this page, in its current form,
+        is for educational purposes and has not been subjected to formal peer review.
+        If you find errors
+        or have any other feedback, please <a href="mailto:doherty.conor@gmail.com">
+        notify the author</a>. Elements of the analysis presented here may be
+        incorporated into future journal articles.</p>
+
         <h2>0. Purpose of this page</h2>
 
         <p>The purpose of this page is to explain and demonstrate what the
@@ -97,6 +107,13 @@
                 series</li>
         </ul>
 
+        <p>This page attempts to be precise but accessible in explaining what
+        the DFT is and what its limitations are in the context of intra-annual
+        environmental time series. The information presented here can help
+        readers decide whether and how the DFT can be effectively applied to
+        their research problem.
+        </p>
+
         <p>While this page focuses primarily on the limitations of the DFT applied to
         intra-annual time series, the purpose is not to claim that the DFT should
         never be used in this context. There are valid reasons why someone may want
@@ -112,8 +129,9 @@
 
         <p>The motivation for creating this page came from working on the paper
         "Fisher Discriminant Analysis for Extracting Interpretable Phenological
-        Information from Multivariate Time Series Data" [link to preprint]. Fisher
-        Discriminant Analysis (FDA) is a method of computing a linear
+        Information from Multivariate Time Series Data"
+        (<a href="https://doi.org/10.31223/X5H94P" target="_blank">preprint</a>).
+        Fisher Discriminant Analysis (FDA) is a method of computing a linear
         transformation that maximally separates dissimilar data in the transformed
         space. As the paper explains, you can construct scenarios where the DFT is
         optimal with respect to the FDA criterion. However, these scenarios are
@@ -144,7 +162,7 @@
         literature suggest that it is a tool that can often get the job done.
         </p>
 
-        <p>This web page will focus on two uses of the DFT that are common in
+        <p>This page will focus on two uses of the DFT that are common in
         environmental remote sensing: data smoothing and information extraction.
         The DFT, and related methods such as the
         Discrete Cosine Transform, are widely used for time series smoothing 
@@ -156,8 +174,8 @@
         extraction
         (Jakubauskas et al. 2002, Wagenseil et al. 2006, Wang et al. 2019,
         [add more]). The logic of this use case is that a low-dimensional
-        representation of the time series in the frequence domain encodes useful
-        information about some aspect of the land surface. While there are a wide
+        representation of the time series in the frequency domain encodes useful
+        information about some aspect of the land surface. While there is a wide
         range of methods
         used for both of these tasks (see Zeng et al. 2020 for comprehensive review),
         it is worth examining the DFT due to its ubiquity and importance across
@@ -167,14 +185,6 @@
         there has been relatively little technical exposition of the underlying
         mechanisms that determine how the DFT behaves when used to smooth or
         extract information from intra-annual environmental time series.
-        </p>
-
-        <p>This page attempts to be precise but 
-        accessible in explaining what
-        the DFT is and what its limitations are in the context of intra-annual
-        environmental time series. The information presented here can help
-        readers decide whether and how the DFT can be effectively applied to
-        their research problem.
         </p>
 
         <h2>2. Mathematical background on the DFT</h2>
@@ -345,7 +355,7 @@ np.allclose(ts, ts_recon)
         orthogonality and is a standard practice in the analysis of periodic signals
         and other oscillatory dynamic systems. However, there are reasons why one
         might want to consider non-integer frequencies in an environmental remote
-        sensing application.</p>
+        sensing application, which we will examine next.</p>
 
         <h2>3. Harmonic regression with non-integer frequencies</h2>
 
@@ -426,17 +436,37 @@ print(D.T@ts)
         <p>When the DFT basis is orthonormal, then \( D^TD = I\), where \( I \) is the
         identity matrix. In this case, the OLS estimate of harmonic regression
         coefficients is simply \(D^T x \), which is equivalent to the projection
-        formulation. This also means that the harmonic regression coefficient
-        estimates can change as a function of which other frequnecy terms are included,
-        similar to how adding covariates to a linear regression can change the
-        coefficient parameter estimates.
-        <p>
+        formulation. When \( D^TD \neq I\), then projection and harmonic regression
+        give different results.</p>
+
+        <p>Already the claim that "there is no canonical set of frequencies for
+        intra-annual environmental time series" should be starting to become
+        apparent. Regression parameter estimates for non-orthogonal regressors
+        depend on which other covariates are included in the regression specification
+        (see the
+        <a href="https://en.wikipedia.org/wiki/Frisch%E2%80%93Waugh%E2%80%93Lovell_theorem" targe="blank">
+        Frish-Waugh-Lovell theorem</a> or, equivalently,
+        <a href="https://hastie.su.domains/Papers/ESLII.pdf#page=73" target="_blank">
+        regression by successive orthogonalization</a>). This means that the harmonic
+        regression representation and/or reconstruction of the time series changes
+        as non-orthogonal basis elements are added or removed. Therefore, the selection of
+        basis elements must either be informed by prior knowledge or determined
+        using application-specific data. In the following sections, we will examine
+        how the utility of the DFT is determined by the choice of specific basis
+        elements.</p>
 
         <h2>4. DFT for information extraction</h2>
 
-        <p>One of the common uses of the DFT in the remote sensing research is to
-        extract information from time series (or "engineer features" in machine
-        learning terminology). The logic underlying this approach is that the
+        <p>One of the common uses of the DFT in remote sensing research is to
+        extract information from time series ("engineer features" in machine
+        learning terminology). In this context, the DFT is used most commonly
+        for time series classification problems, like identifying crop or land
+        cover types. However, in principle, it could be used to predict time
+        series labels of any kind including realizations of a continuous variable
+        (i.e. regresion).
+        </p>
+
+        <p>The logic underlying this approach is that the
         representation of the time series in the frequency domain encodes useful
         information. Employing this approach generally assumes that the time series
         can be usefully described using relatively few frequency terms. Each frequency
@@ -476,14 +506,27 @@ print(D.T@ts)
         <a href="https://en.wikipedia.org/wiki/Aliasing" target="_blank">alias</a>
         back in at negative phase values.
         By toggling the frequency slider, you can find frequencies where initial phase
-        appears to be a good predictor of planting date. However, there is not way
-        to know that these frequencies will be <i>a priori</i>. Rather, they must
+        appears to be a good predictor of planting date. However, there is no way
+        to know what these frequencies will be <i>a priori</i>. Rather, they must
         be found using labelled data. In practice, one must also keep in mind that
         adding and removing non-orthogonal frequencies will affect the frequency
         domain representation of the time series when using HR.
         </p>
 
         <h2>5. DFT for smoothing</h2>
+
+        <p>The DFT is also used for time series smoothing (perhaps even more commonly
+        than for information extraction). Smoothing of remotely sensed time series
+        is often justified on the basis of "denoising" measurement data. However,
+        this reasoning is misleading. It is easy to imagine a time series composed
+        of perfectly accurate (i.e. noiseless) measurements that contains sudden sharp
+        changes. The logic of equating smoothing with denoising requires the assumption
+        that the "true" time series is smooth and that noisy measurements introduce 
+        erroneous sharp features. 
+        There are certainly cases in environmental remote sensing where this
+        assumption is reasonable, but there are cases where it is not and it is worth
+        making the assumption explicit. In any case, DFT-based smoothing filters
+        are commonly used in environmental remote sensing research.</p>
 
         <p>The projection and reconstruction operations shown in Section 1 are
         equivalent to applying a 
@@ -611,7 +654,8 @@ np.allclose(ts_filt, ts_recon)
         <p>The effect of blurring, combined with other issues like aliasing, can
         distort features in the smoothed time series. For example, supposed we
         are trying to identify when green-up begins using NDVI time series. The
-        lefthand plot in <strong>Figure 7</strong> two NDVI time series that, on
+        lefthand plot in <strong>Figure 7</strong> contains two NDVI time series
+        that, on
         visual inspection, appear to be virtually identical during the green-up
         period from timesteps 7-12. However, we see that the reconstructed time
         series in the righthand plot are noticeably different over this same period.
@@ -620,7 +664,7 @@ np.allclose(ts_filt, ts_recon)
         still appears
         to begin green-up around timestep 7, even in the righthand plot. It is
         less clear where green-up begins in the smoothed time series 1 (blue).
-        Depending
+        Depending on
         the method one chooses to identify green-up, it could plausibly start
         anywhere between timesteps 3 and 10 based on the smoothed time series.
         Given that remotely sensed measurements are
@@ -636,5 +680,6 @@ np.allclose(ts_filt, ts_recon)
         different over the same period after smoothing.</p>
 
         <h2>6. Conclusions and takeaways</h2>
+
     </body>
 </html>
