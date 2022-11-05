@@ -23,7 +23,7 @@ pre.prettyprint {
 }
 
 p.figure-label {
-    text-align: center;
+    text-align: left;
     margin-top: 5px;
     font-size: 90%;
     max-width: 500px;

@@ -31,7 +31,7 @@
         with environmental time series data. However, researchers in other domains
         may also find it instructive (colleagues in
         other fields have told me it enhanced their understanding of the DFT).
-        Remote sensing
+        Throughout this page, remote sensing
         domain-specific content is limited to the running example of Normalized
         Difference Vegetation Index 
         (<a href="https://en.wikipedia.org/wiki/Normalized_difference_vegetation_index" target="_blank">NDVI</a>)
@@ -46,7 +46,7 @@
         data. Even if the data is not strictly periodic, often there is
         at least some notion of "cycles" and a given data sample will contain
         many complete cycles. In many intra-annual environmental time series, 
-        there will be only a single "cycle". For example, measurements of agricultural
+        there will be only a single "cycle". For example, measurements of an agricultural
         field containing a crop with a single growing season and harvest will complete 
         one cycle per year. Even when there is more than one cycle, for example in
         the tropics or a crop with multiple harvests, the number of cycles will
@@ -87,7 +87,7 @@
         applications.
         </p>
 
-        <p>The presentation of material assumes 
+        <p>The presentation of this material assumes 
         familiarity with concepts from linear algebra like basis, orthogonality,
         and projection. Example Python code is given to demonstrate various points,
         but understanding the code line-by-line is not required for understanding the high
@@ -167,23 +167,23 @@
         The DFT, and related methods such as the
         Discrete Cosine Transform, are widely used for time series smoothing 
         (Roerink et al. 2000, Moody and Johnson 2001, Hermance 2007, Dash et al. 2010,
-        Guan et al. 2014, Urban et al. 2018, [add more]). Often the DFT is used to
+        Guan et al. 2014, Urban et al. 2018). Often the DFT is used to
         construct a low pass filter, which gets applied as a
         preprocessing step prior to curve fitting or another method that assumes
         the data will have a particular shape. The DFT is also used for information
         extraction
-        (Jakubauskas et al. 2002, Wagenseil et al. 2006, Wang et al. 2019,
-        [add more]). The logic of this use case is that a low-dimensional
+        (Jakubauskas et al. 2002, Wagenseil et al. 2006, Wang et al. 2019).
+        The logic of this use case is that a low-dimensional
         representation of the time series in the frequency domain encodes useful
         information about some aspect of the land surface. While there is a wide
         range of methods
-        used for both of these tasks (see Zeng et al. 2020 for comprehensive review),
+        used for both of these tasks (see Zeng et al. 2020 for a comprehensive review),
         it is worth examining the DFT due to its ubiquity and importance across
         a wide range of disciplines. Even where it is noted that the DFT
         may not be well-suited to analysis of remotely sensed time series
-        (Martinez and Gilabert 2009, [add more]),
+        (Martinez and Gilabert 2009),
         there has been relatively little technical exposition of the underlying
-        mechanisms that determine how the DFT behaves when used to smooth or
+        mechanisms that determine how the DFT behaves when used to smooth or to
         extract information from intra-annual environmental time series.
         </p>
 
@@ -376,7 +376,7 @@ np.allclose(ts, ts_recon)
 
         <p>In order to better represent a time series in low dimensions, it may
         be necessary to use non-integer frequencies. For example, the following 
-        shows a basis composed on frequency terms that complete 0.75 and 1.5 
+        shows a basis composed of frequency terms that complete 0.75 and 1.5 
         oscillations per period.
         </p>
 
@@ -444,7 +444,7 @@ print(D.T@ts)
         apparent. Regression parameter estimates for non-orthogonal regressors
         depend on which other covariates are included in the regression specification
         (see the
-        <a href="https://en.wikipedia.org/wiki/Frisch%E2%80%93Waugh%E2%80%93Lovell_theorem" targe="blank">
+        <a href="https://en.wikipedia.org/wiki/Frisch%E2%80%93Waugh%E2%80%93Lovell_theorem" target="blank">
         Frish-Waugh-Lovell theorem</a> or, equivalently,
         <a href="https://hastie.su.domains/Papers/ESLII.pdf#page=73" target="_blank">
         regression by successive orthogonalization</a>). This means that the harmonic
@@ -463,7 +463,7 @@ print(D.T@ts)
         for time series classification problems, like identifying crop or land
         cover types. However, in principle, it could be used to predict time
         series labels of any kind including realizations of a continuous variable
-        (i.e. regresion).
+        (i.e. regression).
         </p>
 
         <p>The logic underlying this approach is that the
@@ -497,6 +497,18 @@ print(D.T@ts)
         of changes in vegetation density, such as green-up or senescence.</p>
 
 		<iframe src="dft_vis.html" width=800px height=270px frameBorder="0"></iframe>
+        <p class="figure-label"><strong>Interactive Figure 2</strong>
+        Relationship between initial phase and planting day of year (DOY) as a
+        function of frequency. The lefthand plot shows a cosine with the
+        frequency \(f\) corresponding to the number of oscillations per period
+        selected on
+        the frequency slider. The translucent line plots are real county-average
+        NDVI time series, where the color corresponds to the average corn planting
+        date. The righthand plot shows county average planting date vesus initial
+        phase, where the intial phase is computed by projecting the county-average
+        NDVI time series onto Fourier mode of frequency \(f\) and using the 
+        formula for \(\varphi\) above.
+        </p>
 
         <p>The visualization above makes it clear that the correlation between
         planting date and initial phase depends strongly on the selected frequency.
@@ -613,7 +625,7 @@ np.allclose(ts_filt, ts_recon)
         convolution kernel, the filtering operation computes a weighted
         average at each measurement in the time series. The "lobes" of the sinc 
         function capture nearby values in the weighted average. 
-        This is why the fitler 
+        This is why the filter 
         smooths the time series, but also "flattens out" sharp features.
         The effect is similar to blurring of an image by a low pass filter
         in two dimensions, as shown in <strong>Figure 5</strong>.</p>
