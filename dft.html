@@ -38,6 +38,11 @@
         Difference Vegetation Index 
         (<a href="https://en.wikipedia.org/wiki/Normalized_difference_vegetation_index" target="_blank">NDVI</a>)
         time series as proxy for vegetation development.
+        The intention is for the presentation of material to be precise but 
+        still accessible to a relatively broad audience.
+        The information presented here can help
+        readers decide whether and how the DFT can be effectively applied to
+        their research problem.
         </p>
 
         <p>The motivation for this analysis is that intra-annual environmental time
@@ -65,13 +70,26 @@
         <p>The issue is not that the DFT will necessarily distort
         the data. For example, application of a rank \(n\) forward then inverse
         DFT will
-        exactly reconstruct a time series of length \(n\), regardless of periodicty.
+        exactly reconstruct a time series of length \(n\), regardless of periodicty
+        (see Section 2).
         Rather, the issue is that the way the DFT is often used in remote sensing
         applications relies on the assumption that the data can be approximated 
         by a low-dimensional DFT-based representation without significant loss
         of information. This page will explore what can happen when this assumption
         does not hold in practice.
         </p>
+
+        <p>Some specific goals of this page are the following:</p>
+        <ul>
+            <li>Provide the mathematical background necessary to understand the
+                underlying "mechanics" of what happens when the DFT is used for
+                information extraction and data smoothing</li>
+            <li>Demonstrate, with provided Python code, how to construct the DFT
+                and numerically verify some of its important properties</li>
+            <li>Build geometric intuition for the particular concerns that arise
+                when applying the DFT to intra-annual environmental time
+                series</li>
+        </ul>
 
         <p>An important takeaway from this page will be an
         understanding of how the behavior of the DFT, applied to intra-annual time
@@ -89,46 +107,6 @@
         applications.
         </p>
 
-        <p>The presentation of this material assumes 
-        familiarity with concepts from linear algebra like basis, orthogonality,
-        and projection. Example Python code is given to demonstrate various points,
-        but understanding the code line-by-line is not required for understanding the high
-        level concepts. The purpose of the code is to numerically verify some
-        important properties of the DFT, rather than formally proving them.
-        </p>
-
-        <p>Some specific goals of this page are the following:</p>
-        <ul>
-            <li>Provide the mathematical background necessary to understand the
-                underlying "mechanics" of what happens when the DFT is used for
-                smoothing and information extraction</li>
-            <li>Demonstrate, with provided Python code, how to construct the DFT
-                and numerically verify some of its important properties</li>
-            <li>Build geometric intuition for the particular concerns that arise
-                when applying the DFT to intra-annual environmental time
-                series</li>
-        </ul>
-
-        <p>This page attempts to be precise but accessible in explaining what
-        the DFT is and what its limitations are in the context of intra-annual
-        environmental time series. The information presented here can help
-        readers decide whether and how the DFT can be effectively applied to
-        their research problem.
-        </p>
-
-        <p>While this page focuses primarily on the limitations of the DFT applied to
-        intra-annual time series, the purpose is not to claim that the DFT should
-        never be used in this context. There are valid reasons why someone may want
-        to use the DFT including
-        its ease of use, interpretability, and the availability of very efficient
-        implementations based on the Fast Fourier Transform. Practitioners
-        should be aware of the issues raised here to avoid potential pitfalls.
-        There are many alternatives to the DFT, and they are too numerous and
-        varied to discuss in generality. However, I will briefly highlight
-        connections with one other method, and then return to the question
-        of alternatives in the conclusion.
-        </p>
-
         <p>The motivation for creating this page came from working on the paper
         "Fisher Discriminant Analysis for Extracting Interpretable Phenological
         Information from Multivariate Time Series Data"
@@ -144,6 +122,14 @@
         developing a mathematical framework 
         for analyzing some of most widely studied objects in environmental
         remote sensing.
+        </p>
+
+        <p>The presentation of this material assumes 
+        familiarity with concepts from linear algebra like basis, orthogonality,
+        and projection. Example Python code is given to demonstrate various points,
+        but understanding the code line-by-line is not required for understanding the high
+        level concepts. The purpose of the code is to numerically verify some
+        important properties of the DFT, rather than formally proving them.
         </p>
 
         <h2>1. Background on the use of the DFT in environmental remote sensing</h2>
@@ -165,25 +151,56 @@
         </p>
 
         <p>This page will focus on two uses of the DFT that are common in
-        environmental remote sensing: data smoothing and information extraction.
-        The DFT, and related methods such as the
-        Discrete Cosine Transform, are widely used for time series smoothing 
-        (Roerink et al. 2000, Moody and Johnson 2001, Hermance 2007, Dash et al. 2010,
-        Guan et al. 2014, Urban et al. 2018). Often the DFT is used to
-        construct a low pass filter, which gets applied as a
-        preprocessing step prior to curve fitting or another method that assumes
-        the data will have a particular shape. The DFT is also used for information
-        extraction
-        (Jakubauskas et al. 2002, Wagenseil et al. 2006, Wang et al. 2019).
-        The logic of this use case is that a low-dimensional
-        representation of the time series in the frequency domain encodes useful
-        information about some aspect of the land surface. While there is a wide
+        environmental remote sensing: information extraction and data smoothing.
+        These topics are closely related, differing primarily in terms of operating
+        on a low-dimensional representation of a time series (information extraction)
+        versus reconstructing the time series in its original dimension (smoothing).
+        We will cover information extraction first because the role that choice
+        of basis frequencies plays is most obvious in this context.
+        Moving on to smoothing,
+        we will examine how DFT-based smoothing filters can cause blurring of 
+        "sharp" features in a time series. Blurring is indicative of a "loss
+        of information" because there are features of the original time series
+        that are not preserved in the reconstruction. The manner in which features
+        of the original time series are preserved or distorted is determined by
+        the choice of basis frequencies. In this way, information extraction and
+        smoothing are two sides of the same method, and understanding one helps
+        understand the other.
+        </p>
+
+        <p>Using the DFT for information extraction relies on the idea that
+        a low-dimensional frequency domain representation of a time series
+        encodes useful information about the object of study (e.g. the land surface).
+        Variants of the basic approach are explained in Section 4. Studies that have
+        used the DFT for information extracting include Adams et al. 2020,
+        Dado et al. 2020, Deines et al. 2021, Filippelli et al. 2020,
+        Geerken et al. 2005, Jakubauskas et al. 2002, Kluger et al. 2021,
+        Moody and Johnson 2001,
+        Wagenseil et al. 2006, Wang et al. 2019, Xun et al. 2021, You et al. 2021,
+        and others.
+        </p>
+
+        <p>DFT-based smoothing, and time series smoothing in general, is performed
+        to remove large changes over short periods of time. In some cases, it is
+        assumed that the "true" time series has a certain degree of smoothness, such
+        that sudden changes are likely to be caused by erroneous measurements that
+        should be corrected. Smoothing can also be done for more pragmatic purposes to
+        facilitate a data processing method, like fitting a curve of some
+        fixed functional form to the time series (without necessarily claiming that
+        the smoothed time series closer to the "truth"). Studies that have used the 
+        DFT, or related methods like the Discrete Cosine Transform, for time
+        series smoothing include Dash et al. 2010, Guan et al. 2014, Hermance 2007,
+        Roerink et al. 2000, Urban et al. 2018, and others.
+        </p>
+
+        <p>
+        While there is a wide
         range of methods
         used for both of these tasks (see Zeng et al. 2020 for a comprehensive review),
         it is worth examining the DFT due to its ubiquity and importance across
         a wide range of disciplines. Even where it is noted that the DFT
         may not be well-suited to analysis of remotely sensed time series
-        (Martinez and Gilabert 2009),
+        (Martínez and Gilabert 2009),
         there has been relatively little technical exposition of the underlying
         mechanisms that determine how the DFT behaves when used to smooth or to
         extract information from intra-annual environmental time series.
@@ -529,20 +546,18 @@ print(D.T@ts)
 
         <h2>5. DFT for smoothing</h2>
 
-        <p>The DFT is also used for time series smoothing (perhaps even more commonly
-        than for information extraction). Smoothing of remotely sensed time series
-        is often justified on the basis of "denoising" measurement data. However,
-        this reasoning is misleading. It is easy to imagine a time series composed
-        of perfectly accurate (i.e. noiseless) measurements that contains sudden sharp
-        changes. The logic of equating smoothing with denoising requires the assumption
-        that the "true" time series is smooth and that noisy measurements introduce 
-        erroneous sharp features. 
-        There are certainly cases in environmental remote sensing where this
-        assumption is reasonable, but there are cases where it is not and it is worth
-        making the assumption explicit. In any case, DFT-based smoothing filters
-        are commonly used in environmental remote sensing research.</p>
+        <p>The DFT is also used for time series smoothing, either in an attempt
+        to better approximate the hypothetical "true" time series or simply to
+        facilitate and additional data processing step like curve fitting.
+        As mentioned in Section 1, DFT-based smoothing is closely related to
+        information extraction and relies on the same basic assumption that
+        the time series can be usefully approximated using a low-dimensional
+        frequency domain representation. This section will focus on how DFT-based
+        smoothers cause blurring of sharp features, which may cause useful information
+        to be lost.
+        </p>
 
-        <p>The projection and reconstruction operations shown in Section 1 are
+        <p>The projection and reconstruction operations shown in Section 2 are
         equivalent to applying a 
         "<a href="https://en.wikipedia.org/wiki/Sinc_filter#Brick-wall_filters" target="_blank">brick-wall</a>"
         low pass filter. A low pass filter allows the low
@@ -663,7 +678,12 @@ np.allclose(ts_filt, ts_recon)
 
         <img src="blurred_greenup.png" class="plot" height=240px />
         <p class="figure-label"><strong>Figure 6</strong> "Blurred" green up (left)
-        and reconstruction error (right).</p>
+        and reconstruction error (right). The smoothing filter is the 1-dimensional
+        version of the brick wall filter applied to the image in
+        <strong>Figure 5</strong>. Note that the largest reconstruction errors
+        (or "residuals" in regression terminology) occur around sharp features
+        of the time series, where NDVI values change quickly.
+        </p>
 
         <p>The effect of blurring, combined with other issues like aliasing, can
         distort features in the smoothed time series. For example, supposed we
@@ -696,14 +716,51 @@ np.allclose(ts_filt, ts_recon)
         <h2>6. Conclusions and takeaways</h2>
 
         <p>This page covers many details regarding the application of the DFT
-        to intra-annual time series. To reiterate, the purpose of the page
+        to intra-annual time series. As stated in the introduction, the purpose
+        of the page
         is not to suggest that the DFT is inherently unsuited
         to processing and analyzing intra-annual time series. However, it does
         make the point that the DFT is not a "generic" transformation in this
-        context. Its behavior is strongly tied to the particular (non-integer,
-        non-orthogonal) frequency terms that are selected for harmonic regression.
-        Selection of frequency terms should be informed using
-        application-specific data.</p>
+        context. Poor choice of basis frequencies can result in loss of
+        application-relevent information or, equivalently, blurring of features
+        of interest that were present in the original time series.
+        </p>
+
+        <p>As mentioned in Section 0, an alternative to DFT-based information
+        extraction is Fisher Discriminant Analysis (FDA). Doherty and Mauter
+        (<a href="https://doi.org/10.31223/X5H94P" target="_blank">preprint</a>)
+        explain the connection between FDA and the DFT. Under specific
+        conditions, when the structure of a time series is invariant to
+        translation in time, the DFT will be "optimal" for information extraction
+        with respect to the FDA criterion. However, it is very unlikely
+        for this situation to arise with real intra-annual environmental time series.
+        In practice, the interpretation of a given measurement often depends strongly
+        on what time of year the measurement was taken (i.e. not translation
+        invariance). The exposition on this page hopefully helped build some
+        intuition for why this is the case, and why it can be beneficial to look
+        "beyond" DFT-based methods for information extraction and data smoothing
+        when analyzing intra-annual environmental time series.</p>
+
+        <h2>7. References</h2>
+
+        <p>Adams, B., Iverson, L., Matthews, S., Peters, M., Prasad, A., Hix, D.M., 2020. Mapping Forest Composition with Landsat Time Series: An Evaluation of Seasonal Composites and Harmonic Regression. Remote Sensing 12, 610. https://doi.org/10.3390/rs12040610</p>
+        <p>Dado, W.T., Deines, J.M., Patel, R., Liang, S.-Z., Lobell, D.B., 2020. High-Resolution Soybean Yield Mapping Across the US Midwest Using Subfield Harvester Data. Remote Sensing 12, 3471. https://doi.org/10.3390/rs12213471</p>
+        <p>Dash, J., Jeganathan, C., Atkinson, P.M., 2010. The use of MERIS Terrestrial Chlorophyll Index to study spatio-temporal variation in vegetation phenology over India. Remote Sensing of Environment 114, 1388–1402. https://doi.org/10.1016/j.rse.2010.01.021</p>
+        <p>Deines, J.M., Patel, R., Liang, S.-Z., Dado, W., Lobell, D.B., 2021. A million kernels of truth: Insights into scalable satellite maize yield mapping and yield gap analysis from an extensive ground dataset in the US Corn Belt. Remote Sensing of Environment 253, 112174. https://doi.org/10.1016/j.rse.2020.112174</p>
+        <p>Filippelli, S.K., Vogeler, J.C., Falkowski, M.J., Meneguzzo, D.M., 2020. Monitoring conifer cover: Leaf-off lidar and image-based tracking of eastern redcedar encroachment in central Nebraska. Remote Sensing of Environment 248, 111961. https://doi.org/10.1016/j.rse.2020.111961</p>
+        <p>Geerken, R., Zaitchik, B., Evans, J.P., 2005. Classifying rangeland vegetation type and coverage from NDVI time series using Fourier Filtered Cycle Similarity. International Journal of Remote Sensing 26, 5535–5554. https://doi.org/10.1080/01431160500300297</p>
+        <p>Guan, K., Medvigy, D., Wood, E.F., Caylor, K.K., Li, S., Jeong, S.-J., 2014. Deriving Vegetation Phenological Time and Trajectory Information Over Africa Using SEVIRI Daily LAI. IEEE Trans. Geosci. Remote Sensing 52, 1113–1130. https://doi.org/10.1109/TGRS.2013.2247611</p>
+        <p>Hermance, J.F., 2007. Stabilizing high‐order, non‐classical harmonic analysis of NDVI data for average annual models by damping model roughness. International Journal of Remote Sensing 28, 2801–2819. https://doi.org/10.1080/01431160600967128</p>
+        <p>Jakubauskas, M.E., Legates, D.R., Kastens, J.H., 2002. Crop identification using harmonic analysis of time-series AVHRR NDVI data. Computers and Electronics in Agriculture 37, 127–139. https://doi.org/10.1016/S0168-1699(02)00116-3</p>
+        <p>Kluger, D.M., Wang, S., Lobell, D.B., 2021. Two shifts for crop mapping: Leveraging aggregate crop statistics to improve satellite-based maps in new regions. Remote Sensing of Environment 262, 112488. https://doi.org/10.1016/j.rse.2021.112488</p>
+        <p>Martínez, B., Gilabert, M.A., 2009. Vegetation dynamics from NDVI time series analysis using the wavelet transform. Remote Sensing of Environment 113, 1823–1842. https://doi.org/10.1016/j.rse.2009.04.016</p>
+        <p>Moody, A., Johnson, D.M., 2001. Land-Surface Phenologies from AVHRR Using the Discrete Fourier Transform. Remote Sensing of Environment 75, 305–323. https://doi.org/10.1016/S0034-4257(00)00175-9</p>
+        <p>Roerink, G.J., Menenti, M., Verhoef, W., 2000. Reconstructing cloudfree NDVI composites using Fourier analysis of time series. International Journal of Remote Sensing 21, 1911–1917. https://doi.org/10.1080/014311600209814</p>
+        <p>Urban, D., Guan, K., Jain, M., 2018. Estimating sowing dates from satellite data over the U.S. Midwest: A comparison of multiple sensors and metrics. Remote Sensing of Environment 211, 400–412. https://doi.org/10.1016/j.rse.2018.03.039</p>
+        <p>Wagenseil, H., Samimi, C., 2006. Assessing spatio‐temporal variations in plant phenology using Fourier analysis on NDVI time series: results from a dry savannah environment in Namibia. International Journal of Remote Sensing 27, 3455–3471. https://doi.org/10.1080/01431160600639743</p>
+        <p>Xun, L., Zhang, J., Cao, D., Wang, J., Zhang, S., Yao, F., 2021. Mapping cotton cultivated area combining remote sensing with a fused representation-based classification algorithm. Computers and Electronics in Agriculture 181, 105940. https://doi.org/10.1016/j.compag.2020.105940</p>
+        <p>You, N., Dong, J., Huang, J., Du, G., Zhang, G., He, Y., Yang, T., Di, Y., Xiao, X., 2021. The 10-m crop type maps in Northeast China during 2017–2019. Sci Data 8, 41. https://doi.org/10.1038/s41597-021-00827-9</p>
+        <p>Zeng, L., Wardlow, B.D., Xiang, D., Hu, S., Li, D., 2020. A review of vegetation phenological metrics extraction using time-series, multispectral satellite data. Remote Sensing of Environment 237, 111511. https://doi.org/10.1016/j.rse.2019.111511</p>
 
     </body>
 </html>
