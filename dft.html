@@ -62,7 +62,7 @@
         still be small and the duration of each cycle will not necessarily be equal.
         </p>
 
-        <p>This oberservation does not, in itself, imply that the DFT cannot
+        <p>This observation does not, in itself, imply that the DFT cannot
         or should not be applied to intra-annual environmental time series. After all:
         </p>
 
@@ -174,7 +174,7 @@
         a low-dimensional frequency domain representation of a time series
         encodes useful information about the object of study (e.g. the land surface).
         Variants of the basic approach are explained in Section 4. Studies that have
-        used the DFT for information extracting include Adams et al. 2020,
+        used the DFT for information extracti include Adams et al. 2020,
         Dado et al. 2020, Deines et al. 2021, Filippelli et al. 2020,
         Geerken et al. 2005, Jakubauskas et al. 2002, Kluger et al. 2021,
         Moody and Johnson 2001,
@@ -525,7 +525,7 @@ print(D.T@ts)
         selected on
         the frequency slider. The translucent line plots are real county-average
         NDVI time series, where the color corresponds to the average corn planting
-        date. The righthand plot shows county average planting date vesus initial
+        date. The righthand plot shows county average planting date versus initial
         phase, where the intial phase is computed by projecting the county-average
         NDVI time series onto Fourier mode of frequency \(f\) and using the 
         formula for \(\varphi\) above.
@@ -571,7 +571,7 @@ print(D.T@ts)
         <p>From the
         <a href="https://en.wikipedia.org/wiki/Convolution_theorem" target="_blank">Convolution Theorem</a>,
         we know that multiplication in the frequency domain is equivalant to
-        convolution in the time domain. It is instructive to verfiy this property
+        convolution in the time domain. It is instructive to verify this property
         numerically, although it involves more technical details than previous
         examples. These details are mentioned but mostly glossed over because
         they are not integral to the geometric intuition.</p>
@@ -738,7 +738,7 @@ np.allclose(ts_filt, ts_recon)
         for this situation to arise with real intra-annual environmental time series.
         In practice, the interpretation of a given measurement often depends strongly
         on what time of year the measurement was taken (i.e. not translation
-        invariance). The exposition on this page hopefully helped build some
+        invariance). The exposition on this page has hopefully helped build some
         intuition for why this is the case, and why it can be beneficial to look
         "beyond" DFT-based methods for information extraction and data smoothing
         when analyzing intra-annual environmental time series.</p>
