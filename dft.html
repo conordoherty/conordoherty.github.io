@@ -22,7 +22,7 @@
         incorporated into future journal articles. The content of this page may be
         updated periodically.</p>
 
-        <p><strong>Last update:</strong> 11/9/22 
+        <p><strong>Last update:</strong> 11/16/22 
         [<a href="https://github.com/conordoherty/conordoherty.github.io/commits/main/dft.html" target="_blank">change log</a>]</p>
 
         <p><a href="/">Back to main page</a></p>
@@ -313,9 +313,9 @@ np.allclose(np.dot(basis.cos1+basis.sin1, basis.cos2+basis.sin2), 0)
 
         <pre class="prettyprint">
 # load NDVI time series data
-data = pd.read_csv('ndvi_planting_date.csv')
+data = pd.read_csv('ndvi_ts.csv')
 # select an example time series and format into column vector
-ts = data.iloc[-1, 4:].to_numpy().reshape(-1, 1)
+ts = data.iloc[-1, 2:].to_numpy().reshape(-1, 1)
 plt.plot(ts, label='original')
 
 basis = make_hr_basis_funcs(len(ts), [1, 2])
@@ -620,13 +620,13 @@ plt.plot(sinc)
 # is we're trying to demonstrate that they're equivalent)
 
 # create "triple" repeated time series
-tts = np.tile(ts, 3)
+tts = np.tile(ts.flatten(), 3)
 
 # convolve with filter and keep only the "middle"
 ts_filt = np.convolve(tts, sinc, mode='same')[ts.size:-ts.size]
 
 # scale by the square root of the filter length
-ts_filt = filtered_ts/np.sqrt(sinc.size)
+ts_filt = ts_filt/np.sqrt(sinc.size)
 
 # recreate the projected/reconstructed time series from Figure 2
 dft = basis.iloc[:, 1:].to_numpy()
@@ -634,7 +634,7 @@ ts_freq = dft.T@ts
 ts_recon = dft@ts_freq
 
 # verify that the two method produce the same smoothed time series 
-np.allclose(ts_filt, ts_recon)
+np.allclose(ts_filt, ts_recon.flatten())
 # True
 </pre>
 
